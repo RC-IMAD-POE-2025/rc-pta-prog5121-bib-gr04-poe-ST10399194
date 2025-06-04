@@ -36,6 +36,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
-        <exec.mainClass>chitchat.ST10486804PROG5121POE</exec.mainClass>
+        <exec.mainClass>koketso.ST10486804PROG5121POE</exec.mainClass>
     </properties>
 </project>
