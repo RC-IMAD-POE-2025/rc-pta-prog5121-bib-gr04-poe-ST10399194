@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>PROG5121</groupId>
     <artifactId>ST10399194-PROG5121-POE</artifactId>
-    <version>1.0</version>
+    <version>3.0</version>
     <packaging>jar</packaging>
     <dependencies>
         <dependency>
@@ -36,6 +36,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
-        <exec.mainClass>koketso.ST10486804PROG5121POE</exec.mainClass>
+        <!-- Corrected the main class to match the student number -->
+        <exec.mainClass>koketso.ST10399194PROG5121POE</exec.mainClass>
     </properties>
 </project>

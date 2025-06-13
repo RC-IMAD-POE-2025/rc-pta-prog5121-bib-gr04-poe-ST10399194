@@ -9,16 +9,23 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class MessageManager {
-    /**
-     * Loads messages from JSON files.
-     */
-    public static ArrayList<Message> loadUserMessages(String userCellPhone) {
-        ArrayList<Message> userMessages = new ArrayList<>();
-        JSONParser parser = new JSONParser();
-        File directory = new File(".");
+    private static final String MESSAGES_DIR = "messages";
 
-        // List all files that start with "message_" and end with ".json"
-        File[] files = directory.listFiles((dir, name) -> name.startsWith("message_") && name.endsWith(".json"));
+    /**
+     * This method reads all the .json files from the 'messages' folder
+     * and loads them into a list.
+     */
+    public static ArrayList<Message> loadAllMessages() {
+        ArrayList<Message> allMessages = new ArrayList<>();
+        JSONParser parser = new JSONParser();
+        File directory = new File(MESSAGES_DIR);
+
+        if (!directory.exists()) {
+            directory.mkdirs();
+            return allMessages;
+        }
+
+        File[] files = directory.listFiles((dir, name) -> name.endsWith(".json"));
 
         if (files != null) {
             for (File file : files) {
@@ -29,28 +36,44 @@ public class MessageManager {
                     String sender = (String) jsonMessage.get("MESSAGE_SENDER");
                     String recipient = (String) jsonMessage.get("MESSAGE_RECIPIENT");
                     String payload = (String) jsonMessage.get("MESSAGE_PAYLOAD");
-                    
-                    // JSONSimple parses numbers as Long by default
                     long indexLong = (Long) jsonMessage.getOrDefault("MESSAGE_INDEX", 0L);
                     int index = (int) indexLong;
-                    
                     String hash = (String) jsonMessage.get("MESSAGE_HASH");
-
-                    // Filter: load message if user is sender or recipient
-                    if (userCellPhone != null && (userCellPhone.equals(sender) || userCellPhone.equals(recipient))) {
-                        // Use the new package-private constructor to create Message object
-                        Message message = new Message(id, sender, recipient, payload, index, hash);
-                        userMessages.add(message);
-                    }
-                } catch (IOException | ParseException e) {
-                    System.err.println("Error loading message from file " + file.getName() + ": " + e.getMessage());
+                    String status = (String) jsonMessage.getOrDefault("MESSAGE_STATUS", "Stored");
                     
-                } catch (Exception e) { // Catch any other unexpected errors during message parsing
-                    System.err.println("Unexpected error processing file " + file.getName() + ": " + e.getMessage());
-                  
+                    boolean isReceived = (boolean) jsonMessage.getOrDefault("IS_RECEIVED", false);
+                    boolean isRead = (boolean) jsonMessage.getOrDefault("IS_READ", false);
+
+                    Message message = new Message(id, sender, recipient, payload, index, hash);
+                    message.setStatus(status);
+                    message.setReceived(isReceived);
+                    message.setRead(isRead);
+                    
+                    allMessages.add(message);
+                    
+                } catch (IOException | ParseException e) {
+                    System.err.println("Problem reading file " + file.getName() + ": " + e.getMessage());
+                } catch (Exception e) { 
+                    System.err.println("A weird error happened with file " + file.getName() + ": " + e.getMessage());
                 }
             }
         }
-        return userMessages;
+        return allMessages;
+    }
+
+    /**
+     * This method deletes the JSON file for a specific message.
+     * @param messageId The ID of the message to delete.
+     * @return true if it was deleted, false otherwise.
+     */
+    public static boolean deleteMessageFile(String messageId) {
+        if (messageId == null || messageId.isEmpty()) {
+            return false;
+        }
+        File fileToDelete = new File(MESSAGES_DIR + "/message_" + messageId + ".json");
+        if (fileToDelete.exists()) {
+            return fileToDelete.delete();
+        }
+        return false;
     }
 }

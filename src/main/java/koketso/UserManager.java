@@ -24,6 +24,16 @@ public class UserManager {
      */
     public String registerUser(RegistrationLogin regLogin, String username, String password, 
                               String cellphone, String firstName, String lastName) {
+        // First, check if the username or cellphone number already exists.
+        for (RegistrationLogin existingUser : users) {
+            if (existingUser.getUserName().equals(username)) {
+                return "Registration failed: Username already taken.";
+            }
+            if (existingUser.getCellPhoneNumber().equals(cellphone)) {
+                return "Registration failed: Cellphone number is already in use.";
+            }
+        }
+        
         String feedback = regLogin.registerUser(username, password, cellphone, firstName, lastName);
         if (regLogin.isRegistered()) {
             users.add(regLogin);
@@ -45,6 +55,28 @@ public class UserManager {
         }
         return null;
     }
+    
+    /**
+     * Finds a user by their cellphone number.
+     * @param cellNumber The cellphone number to search for.
+     * @return The RegistrationLogin instance or null if not found.
+     */
+    public RegistrationLogin findUserByCellphone(String cellNumber) {
+        for (RegistrationLogin user : users) {
+            if (user.getCellPhoneNumber() != null && user.getCellPhoneNumber().equals(cellNumber)) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * This method gives us all the users that are registered.
+     * @return A list of all users.
+     */
+    public ArrayList<RegistrationLogin> getAllUsers() {
+        return this.users;
+    }
 
     /**
      * Loads users from users.json into the users list.
@@ -57,7 +89,8 @@ public class UserManager {
             for (Object obj : usersArray) {
                 JSONObject userJson = (JSONObject) obj;
                 RegistrationLogin user = new RegistrationLogin();
-                String feedback = user.registerUser(
+                // We use the registerUser method to load the user data into the object
+                user.registerUser(
                     (String) userJson.get("username"),
                     (String) userJson.get("password"),
                     (String) userJson.get("cellphone"),
@@ -69,12 +102,13 @@ public class UserManager {
                 }
             }
         } catch (Exception e) {
-            // File doesn't exist or is empty, start with empty list
+            // This is okay, it just means no users file exists yet.
+            // We'll start with an empty list of users.
         }
     }
 
     /**
-     * Saves users to users.json.
+     * Saves all current users to the users.json file.
      */
     @SuppressWarnings("unchecked")
     private void saveUsers() {
@@ -91,8 +125,10 @@ public class UserManager {
             }
         }
         try (FileWriter file = new FileWriter(USERS_FILE)) {
+            // Write the JSON array to the file
             file.write(usersArray.toJSONString());
         } catch (IOException e) {
+            // Print an error if we can't save the file
             e.printStackTrace();
         }
     }
